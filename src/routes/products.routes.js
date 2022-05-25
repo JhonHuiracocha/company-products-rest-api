@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { verifyToken } from "../middlewares/authJwt";
 import {
   addProduct,
   getProducts,
@@ -10,10 +11,10 @@ import {
 
 const router = Router();
 
-router.post("/", addProduct);
+router.post("/", verifyToken, addProduct);
 router.get("/", getProducts);
 router.get("/:id", getProductById);
-router.put("/:id", updateProductById);
-router.delete("/:id", deleteProductById);
+router.put("/:id", verifyToken, updateProductById);
+router.delete("/:id", verifyToken, deleteProductById);
 
 export default router;
