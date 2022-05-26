@@ -1,5 +1,7 @@
-import jwt from "jsonwebtoken";
 import User from "../models/User";
+import Role from "../models/Role";
+
+import { generateToken } from "../helpers/jwt";
 
 export const signIn = async (req, res) => {
   try {
@@ -24,9 +26,7 @@ export const signIn = async (req, res) => {
         .status(401)
         .json({ success: false, token: null, message: "Invalid password" });
 
-    const token = jwt.sign({ id: userFound._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: 86400, // 24 hours
-    });
+    const token = await generateToken(userFound._id);
 
     return res.status(200).json({
       success: true,
@@ -43,7 +43,7 @@ export const signIn = async (req, res) => {
 
 export const signUp = async (req, res) => {
   try {
-    const { username, email, password, isAdmin } = req.body;
+    const { username, email, password } = req.body;
 
     const userFound = await User.findOne({ email });
 
@@ -54,18 +54,18 @@ export const signUp = async (req, res) => {
         message: "The user already exists",
       });
 
+    const role = await Role.findOne({ name: "user" });
+
     const newUser = new User({
       username,
       email,
       password: await User.encryptPassword(password),
-      isAdmin,
+      roles: [role._id],
     });
 
     const savedUser = await newUser.save();
 
-    const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET_KEY, {
-      expiresIn: 86400, // 24 hours
-    });
+    const token = await generateToken(savedUser._id);
 
     return res.status(201).json({
       success: true,

@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { verifyToken } from "../middlewares/authJwt";
+import { auth, verifyRole } from "../middlewares/index";
 import {
   addUser,
   getUsers,
@@ -11,10 +11,10 @@ import {
 
 const router = Router();
 
-router.post("/", verifyToken, addUser);
+router.post("/", [auth.verifyToken, verifyRole.isModerator], addUser);
 router.get("/", getUsers);
 router.get("/:id", getUserById);
-router.put("/:id", verifyToken, updateUserById);
-router.delete("/:id", verifyToken, deleteUserById);
+router.put("/:id", [auth.verifyToken, verifyRole.isModerator], updateUserById);
+router.delete("/:id", [auth.verifyToken, verifyRole.isAdmin], deleteUserById);
 
 export default router;

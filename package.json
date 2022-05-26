@@ -4,6 +4,7 @@
   "description": "A simple rest apit with Nodejs & Express",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
     "dev": "nodemon src/index.js --exec babel-node"
   },
   "keywords": [],

@@ -1,8 +1,9 @@
+import Role from "../models/Role";
 import User from "../models/User";
 
 export const addUser = async (req, res) => {
   try {
-    const { username, email, password, isAdmin } = req.body;
+    const { username, email, password, roles } = req.body;
 
     const userFound = await User.findOne({ email });
 
@@ -15,8 +16,16 @@ export const addUser = async (req, res) => {
       username,
       email,
       password: await User.encryptPassword(password),
-      isAdmin,
     });
+
+    const rolesFound = await Role.find({ name: { $in: roles } });
+
+    if (!rolesFound.length) {
+      const role = await Role.findOne({ name: "user" });
+      newUser.roles = [role._id];
+    } else {
+      newUser.roles = rolesFound.map((role) => role._id);
+    }
 
     const savedUser = await newUser.save();
 
@@ -74,9 +83,16 @@ export const getUserById = async (req, res) => {
 export const updateUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { username, email, password, isAdmin } = req.body;
+    const { username, email, password, roles } = req.body;
 
-    const newUser = { username, email, password, isAdmin };
+    const rolesFound = await Role.find({ name: { $in: roles } });
+
+    const newUser = {
+      username,
+      email,
+      password,
+      roles: rolesFound.map((role) => role._id),
+    };
 
     const updatedUser = await User.findByIdAndUpdate(id, newUser, {
       new: true,
